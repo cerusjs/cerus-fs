@@ -11,7 +11,14 @@
 	"bugs": {
 		"url": "https://github.com/cerusjs/cerus-fs/issues"
 	},
-	"scripts": {},
+	"scripts": {
+		"test": "./node_modules/.bin/mocha tests --reporter spec"
+	},
 	"homepage": "https://github.com/cerusjs/cerus-fs",
-	"dependencies": {}
+	"dependencies": {},
+	"devDependencies": {
+		"cerus": "0.0.9",
+		"chai": "^4.1.2",
+		"mocha": "^4.0.1"
+	}
 }
