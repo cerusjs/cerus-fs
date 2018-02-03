@@ -13,7 +13,7 @@ module.exports = function() {
 	var file = require("./lib/file");
 	var folder = require("./lib/folder");
 
-	self.init_ = function(cerus_) {
+	self._init = function(cerus_) {
 		cerus = cerus_;
 	}
 
