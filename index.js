@@ -1,29 +1,27 @@
 module.exports = function() {
-	var self = {};
-
-	var package = require("./package.json");
-	
-	self.name = package["name"];
-	self.version = package["version"];
-	self.dependencies = [
-		"cerus-promise"
-	];
-
+	var plugin = {};
 	var cerus;
 	var file = require("./lib/file");
 	var folder = require("./lib/folder");
+	var package = require("./package.json");
+	
+	plugin.name = package["name"];
+	plugin.version = package["version"];
+	plugin.dependencies = [
+		"cerus-promise"
+	];
 
-	self._init = function(cerus_) {
+	plugin._init = function(cerus_) {
 		cerus = cerus_;
 	}
 
-	self.file = function(path) {
-		return file(cerus, path);
+	plugin.file = function(path) {
+		return new file(cerus, path);
 	}
 
-	self.folder = function(path) {
-		return folder(cerus, path);
+	plugin.folder = function(path) {
+		return new folder(cerus, path);
 	}
 
-	return self;
+	return plugin;
 }
