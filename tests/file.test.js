@@ -2,7 +2,7 @@ var expect = require("chai").expect;
 var cerus = require("cerus")();
 var file__ = require("../lib/file.js");
 var file = function(path) {
-	return file__(cerus, path);
+	return new file__(cerus, path);
 }
 
 describe("file", function() {
@@ -119,42 +119,16 @@ describe("file", function() {
 
 	describe("#name()", function() {
 		context("with 'file.txt' as path", function() {
-			it("should return the name 'file.txt'", function() {
+			it("should return the name 'file'", function() {
 				var name = file("file.txt").name();
 
-				expect(name).to.equal("file.txt");
+				expect(name).to.equal("file");
 			});
 		});
 
 		context("with './tests/files/file.txt' as path", function() {
-			it("should return the name 'file.txt'", function() {
-				var name = file("./tests/files/file.txt").name();
-
-				expect(name).to.equal("file.txt");
-			});
-		});
-
-		context("with './tests/files/file.txt' as path and null as parameter", function() {
-			it("should throw a TypeError", function() {
-				var func = function() {
-					file("./tests/files/file.txt").name(null);
-				}
-
-				expect(func).to.throw();
-			});
-		});
-
-		context("with './tests/files/file.txt' as path and '' as parameter", function() {
-			it("should return the name 'file.txt'", function() {
-				var name = file("./tests/files/file.txt").name("");
-
-				expect(name).to.equal("file.txt");
-			});
-		});
-
-		context("with './tests/files/file.txt' as path and '.txt' as parameter", function() {
 			it("should return the name 'file'", function() {
-				var name = file("./tests/files/file.txt").name(".txt");
+				var name = file("./tests/files/file.txt").name();
 
 				expect(name).to.equal("file");
 			});
@@ -214,7 +188,6 @@ describe("file", function() {
 			it("should return a string with data", function(done) {
 				file("./tests/files/file1.txt").read()
 				.then(function(data) {
-					data = data.data();
 					expect(data).to.be.a("string");
 					done();
 				})
@@ -228,7 +201,6 @@ describe("file", function() {
 			it("should return a string with data", function(done) {
 				file(__dirname + "/files/file2.txt").read()
 				.then(function(data) {
-					data = data.data();
 					expect(data).to.be.a("string");
 					done();
 				})
@@ -242,7 +214,6 @@ describe("file", function() {
 			it("should return a string with data", function(done) {
 				file("./tests/files/file1.txt").read("utf-8")
 				.then(function(data) {
-					data = data.data();
 					expect(data).to.be.a("string");
 					done();
 				})
@@ -256,7 +227,6 @@ describe("file", function() {
 			it("should return a string with data", function(done) {
 				file(__dirname + "/files/file2.txt").read("utf-8")
 				.then(function(data) {
-					data = data.data();
 					expect(data).to.be.a("string");
 					done();
 				})
