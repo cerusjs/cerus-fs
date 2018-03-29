@@ -234,5 +234,25 @@ describe("file", function() {
 				});
 			});
 		});
+
+		describe("#name", function() {
+			context("with the file 'file'", function() {
+				it("should return 'file'", function() {
+					expect(reset("file").sync().name()).to.equal("file");
+				});
+			});
+
+			context("with the file 'file.txt'", function() {
+				it("should return 'file'", function() {
+					expect(reset("file.txt").sync().name()).to.equal("file");
+				});
+			});
+
+			context("with the folder '.gitignore'", function() {
+				it("should return '.gitignore'", function() {
+					expect(reset(".gitignore").sync().name()).to.equal(".gitignore");
+				});
+			});
+		});
 	});
 });
