@@ -1,323 +1,212 @@
 var expect = require("chai").expect;
 var cerus = require("cerus")();
-var file__ = require("../lib/file.js");
-var file = function(path) {
-	return new file__(cerus, path);
+var fs = require("fs");
+var fsextra = require("fs-extra");
+var file_ = require("../lib/file.js");
+
+var reset = function(path, opts = {}) {
+	fsextra.emptyDirSync("./tests/files");
+	fs.closeSync(fs.openSync("./tests/files/file.txt", "w", opts["file_mode"]));
+	fs.mkdirSync("./tests/files/folder", opts["folder_mode"]);
+
+	return new file_(cerus, opts["fullpath"] ? path : "./tests/files/" + path);
+}
+
+var read = function(path, opts = {}) {
+	var data = fs.readFileSync("./tests/files/" + path, opts);
+
+	if(Buffer.isBuffer(data)) {
+		data = data.toString();
+	}
+
+	return data;
+}
+
+var write = function(path, data, opts) {
+	fs.writeFileSync("./tests/files/" + path, data, opts)
+}
+
+var exists = function(path) {
+	return fs.existsSync("./tests/files/" + path);
 }
 
 describe("file", function() {
 	describe("constructor", function() {
-		context("with undefined as path", function() {
+		context("with non-string as path", function() {
 			it("should throw a TypeError", function() {
-				var func = function() {
-					file(undefined);
-				}
-
-				expect(func).to.throw();
-			});
-		});
-
-		context("with null as path", function() {
-			it("should throw a TypeError", function() {
-				var func = function() {
-					file(null);
-				}
-
-				expect(func).to.throw();
+				expect(function() {
+					reset(1234, {fullpath: true});
+				}).to.throw();
 			});
 		});
 
 		context("with a non-existant file", function() {
 			it("shouldn't throw an error", function() {
-				var func = function() {
-					file("./tests/files/file3.txt");
-				}
-
-				expect(func).not.to.throw();
+				expect(function() {
+					reset("non-existant.txt");
+				}).not.to.throw();
 			});
 		});
 
 		context("with a relative path as path", function() {
 			it("shouldn't throw an error", function() {
-				var func = function() {
-					file("./tests/files/file1.txt");
-				}
-
-				expect(func).not.to.throw();
+				expect(function() {
+					reset("file.txt");
+				}).not.to.throw();
 			});
 		});
 
 		context("with an absolute path as path", function() {
 			it("shouldn't throw an error", function() {
-				var func = function() {
-					file(__dirname + "/files/file1.txt");
-				}
-
-				expect(func).not.to.throw();
+				expect(function() {
+					reset(__dirname + "/files/file.txt", {fullpath: true});
+				}).not.to.throw();
 			});
 		});
 	});
 
-	describe("#path", function() {
-		context("with no parameters", function() {
-			it("should return the same path", function() {
-				var path = file("./tests/files/file1.txt").path();
-
-				expect(path).to.equal("./tests/files/file1.txt");
+	describe("#sync", function() {
+		describe("#append", function() {
+			context("with a non-string as parameter", function() {
+				it("should throw an error", function() {
+					expect(function() {
+						reset("file.txt").sync().append(1234);
+					}).to.throw();
+				});
 			});
-		});
 
-		context("with a new path as parameters", function() {
-			it("should return the new path", function() {
-				var path = file("./tests/files/file1.txt").path("./tests/files/file2.txt");
-
-				expect(path).to.equal("./tests/files/file2.txt");
+			context("appending to a folder", function() {
+				it("should throw an error", function() {
+					expect(function() {
+						reset("folder/").sync().append("Test line");
+					}).to.throw();
+				});
 			});
-		});
 
-		context("with the same path as parameters", function() {
-			it("should return the same path", function() {
-				var path = file("./tests/files/file1.txt").path("./tests/files/file1.txt");
-
-				expect(path).to.equal("./tests/files/file1.txt");
+			context("appending to a non-existant file", function() {
+				it("should create that file", function() {
+					reset("file.txt").sync().append("Test line");
+					expect(exists("file.txt")).to.be.true;
+				});
 			});
-		});
-	});
 
-	describe("#type()", function() {
-		context("with 'file' as path", function() {
-			it("should return the type ''", function() {
-				var type = file("file").type();
-
-				expect(type).to.equal("");
+			context("with a single line string as parameter", function() {
+				it("should append the string to the file", function() {
+					reset("file.txt").sync().append("Test line");
+					expect(read("file.txt")).to.equal("Test line");
+				});
 			});
-		});
 
-		context("with 'file.txt' as path", function() {
-			it("should return the type '.txt'", function() {
-				var type = file("file.txt").type();
-
-				expect(type).to.equal(".txt");
+			context("with a dual line string as parameter", function() {
+				it("should append the dual lines to the file", function() {
+					reset("file.txt").sync().append("Test line 1\nTest line 2");
+					expect(read("file.txt")).to.equal("Test line 1\nTest line 2");
+				});
 			});
-		});
 
-		context("with 'file.' as path", function() {
-			it("should return the type '.'", function() {
-				var type = file("file.").type();
-
-				expect(type).to.equal(".");
-			});
-		});
-
-		context("with 'file.text.txt' as path", function() {
-			it("should return the type '.txt'", function() {
-				var type = file("file.txt").type();
-				expect(type).to.equal(".txt");
-			});
-		});
-	});
-
-	describe("#name()", function() {
-		context("with 'file.txt' as path", function() {
-			it("should return the name 'file'", function() {
-				var name = file("file.txt").name();
-
-				expect(name).to.equal("file");
-			});
-		});
-
-		context("with './tests/files/file.txt' as path", function() {
-			it("should return the name 'file'", function() {
-				var name = file("./tests/files/file.txt").name();
-
-				expect(name).to.equal("file");
-			});
-		});
-	});
-
-	describe("#dir()", function() {
-		context("with 'file.txt' as path", function() {
-			it("should return the dir '.'", function() {
-				var dir = file("file.txt").dir();
-
-				expect(dir).to.equal(".");
-			});
-		});
-
-		context("with './tests/files/file.txt' as path", function() {
-			it("should return the dir '/test/files'", function() {
-				var dir = file("./tests/files/file.txt").dir();
-
-				expect(dir).to.equal("./tests/files");
-			});
-		});
-
-		context("with '/tests/files/file.txt' as path", function() {
-			it("should return the dir '/test/files'", function() {
-				var dir = file("/tests/files/file.txt").dir();
-
-				expect(dir).to.equal("/tests/files");
-			});
-		});
-
-		context("with '' as path", function() {
-			it("should return the dir '.'", function() {
-				var dir = file("").dir();
-
-				expect(dir).to.equal(".");
-			});
-		});
-	});
-
-	describe("#read()", function() {
-		context("with a non-existant path", function() {
-			it("should throw an error", function(done) {
-				file("./tests/files/file.txt").read()
-				.catch(function(err) {
-					expect(err).to.instanceof(Error);
-					done();
-				})
-				.then(function() {
-					//throw new Error("this shouldn't be called");
-					done();
+			context("with two lines appended apart", function() {
+				it("should append the dual lines to the file", function() {
+					var file = reset("file.txt");
+					file.sync().append("Test line 1\n");
+					file.sync().append("Test line 2");
+					expect(read("file.txt")).to.equal("Test line 1\nTest line 2");
 				});
 			});
 		});
 
-		context("with a relative path", function() {
-			it("should return a string with data", function(done) {
-				file("./tests/files/file1.txt").read()
-				.then(function(data) {
-					expect(data).to.be.a("string");
-					done();
-				})
-				.catch(function(err) {
-					console.log(err);
+		describe("#clear", function() {
+			context("trying to clear a folder", function() {
+				it("should throw an error", function() {
+					expect(function() {
+						reset("folder/").sync().clear();
+					}).to.throw();
+				});
+			});
+
+			context("trying to clear a non-existant file", function() {
+				it("should throw an error", function() {
+					expect(function() {
+						reset("non-existant.txt").sync().clear();
+					}).to.throw();
+				});
+			});
+
+			context("with the file already cleared", function() {
+				it("should do nothing", function() {
+					var file = reset("file.txt");
+					file.sync().clear();
+					expect(read("file.txt")).to.equal("");
+				});
+			});
+
+			context("with a single line added to the file", function() {
+				it("should clear the file", function() {
+					var file = reset("file.txt");
+					write("file.txt", "Test line");
+					file.sync().clear();
+					expect(read("file.txt")).to.equal("");
+				});
+			});
+
+			context("with two lines added to the file", function() {
+				it("should clear both lines", function() {
+					var file = reset("file.txt");
+					write("file.txt", "Test line 1");
+					write("file.txt", "Test line 2");
+					file.sync().clear();
+					expect(read("file.txt")).to.equal("");
 				});
 			});
 		});
 
-		context("with an absolute path", function() {
-			it("should return a string with data", function(done) {
-				file(__dirname + "/files/file2.txt").read()
-				.then(function(data) {
-					expect(data).to.be.a("string");
-					done();
-				})
-				.catch(function() {
-					throw new Error("this shouldn't be called");
+		describe("#create", function() {
+			context("with a folder as path", function() {
+				it("should throw an error", function() {
+					expect(function() {
+						reset("folder/").sync().create();
+					}).to.throw();
+				});
+			});
+
+			context("with a non-existant file as path", function() {
+				it("should create the file", function() {
+					reset("new.txt").sync().create();
+					expect(exists("new.txt")).to.be.true;
+				});
+			});
+
+			context("with an file as path", function() {
+				it("should create the file", function() {
+					reset("file.txt").sync().create();
+					expect(exists("file.txt")).to.be.true;
 				});
 			});
 		});
 
-		context("with a relative path and 'utf-8' as parameter", function() {
-			it("should return a string with data", function(done) {
-				file("./tests/files/file1.txt").read("utf-8")
-				.then(function(data) {
-					expect(data).to.be.a("string");
-					done();
-				})
-				.catch(function() {
-					throw new Error("this shouldn't be called");
+		describe("#ext", function() {
+			context("with the file 'file'", function() {
+				it("should return ''", function() {
+					expect(reset("file").sync().ext()).to.equal("");
 				});
 			});
-		});
 
-		context("with an absolute path and 'utf-8' as parameter", function() {
-			it("should return a string with data", function(done) {
-				file(__dirname + "/files/file2.txt").read("utf-8")
-				.then(function(data) {
-					expect(data).to.be.a("string");
-					done();
-				})
-				.catch(function() {
-					throw new Error("this shouldn't be called");
+			context("with the file 'file.txt'", function() {
+				it("should return '.txt'", function() {
+					expect(reset("file.txt").sync().ext()).to.equal(".txt");
 				});
 			});
-		});
-	});
-
-	describe("#append()", function() {
-		context("with a non-existant path and undefined as parameter", function() {
-			it("should throw a TypeError", function() {
-				var func = function() {
-					file("./tests/files/file.txt").append(undefined);
-				}
-
-				expect(func).to.throw();
-			});
-		});
-
-		context("with a non-existant path and 'Another string with it.' as parameter", function() {
-			it("creates the file and adds the text to the file", function(done) {
-				file("./tests/files/file.txt").append("\nAnother string with it.")
-				.then(function() {
-					done();
-				})
-				.catch(function() {
-					throw new Error("this shouldn't be called");
-				});
-			});
-		});
-
-		context("with a relative path and undefined as parameter", function() {
-			it("should throw a TypeError", function() {
-				var func = function() {
-					file("./tests/files/file1.txt").append(undefined);
-				}
-
-				expect(func).to.throw();
-			});
-		});
-
-		context("with a relative path and 'Another string with it.' as parameter", function() {
-			it("adds the text to the file", function(done) {
-				file("./tests/files/file1.txt").append("\nAnother string with it.")
-				.then(function() {
-					done();
-				})
-				.catch(function() {
-					throw new Error("this shouldn't be called");
-				});
-			});
-		});
-
-		context("with an absolute path and undefined as parameter", function() {
-			it("should throw a TypeError", function() {
-				var func_ = function() {
-					file(__dirname + "/tests/files/file1.txt").append(undefined);
-				}
-
-				expect(func_).to.throw();
-			});
-		});
-
-		context("with an absolute path and 'Another string with it.' as parameter", function() {
-			it("adds the text to the file", function(done) {
-				file(__dirname + "/files/file1.txt").append("\nAnother string with it.")
-				.then(function() {
-					done();
-				})
-				.catch(function() {
-					throw new Error("this shouldn't be called");
-				});;
-			});
-		});
-	});
-
-	describe("#clear()", function() {
-		context("with a non-existant path", function() {
-			it("will throw an error", function() {
-				
-			})
-		});
-
-		context("with a relative path", function() {
 			
-		});
+			context("with the file 'file.test.txt'", function() {
+				it("should return '.txt'", function() {
+					expect(reset("file.test.txt").sync().ext()).to.equal(".txt");
+				});
+			});
 
-		context("with an absolute path", function() {
-			
+			context("with the file '.gitignore'", function() {
+				it("should return ''", function() {
+					expect(reset(".gitignore").sync().ext()).to.equal("");
+				});
+			});
 		});
 	});
 });
