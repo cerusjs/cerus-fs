@@ -183,6 +183,32 @@ describe("file", function() {
 			});
 		});
 
+		describe("#dir", function() {
+			context("with the file '.'", function() {
+				it("should return ''", function() {
+					expect(reset("", {fullpath: true}).sync().dir()).to.equal(".");
+				});
+			});
+
+			context("with the file '/files/file.txt'", function() {
+				it("should return '/files'", function() {
+					expect(reset("/files/file.txt", {fullpath: true}).sync().dir()).to.equal("/files");
+				});
+			});
+			
+			context("with the folder '/files/folder/'", function() {
+				it("should return '/files'", function() {
+					expect(reset("/files/folder/", {fullpath: true}).sync().dir()).to.equal("/files");
+				});
+			});
+
+			context("with the file '/files/file'", function() {
+				it("should return '/files'", function() {
+					expect(reset("/files/file", {fullpath: true}).sync().dir()).to.equal("/files");
+				});
+			});
+		});
+
 		describe("#ext", function() {
 			context("with the file 'file'", function() {
 				it("should return ''", function() {
