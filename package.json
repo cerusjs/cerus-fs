@@ -1,0 +1,27 @@
+{
+	"name": "cerus-fs",
+	"version": "0.1.6",
+	"description": "The file system module for CerusJS",
+	"main": "index.js",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/cerusjs/cerus-fs.git"
+	},
+	"author": "cerusjs",
+	"bugs": {
+		"url": "https://github.com/cerusjs/cerus-fs/issues"
+	},
+	"scripts": {
+		"test": "./node_modules/.bin/mocha tests --reporter spec",
+		"lint": "eslint lib/"
+	},
+	"homepage": "https://github.com/cerusjs/cerus-fs",
+	"dependencies": {
+		"fs-extra": "^5.0.0"
+	},
+	"devDependencies": {
+		"cerus": "0.0.9",
+		"chai": "^4.1.2",
+		"mocha": "^5.0.5"
+	}
+}
