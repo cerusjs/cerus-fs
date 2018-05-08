@@ -1,6 +1,6 @@
 {
 	"name": "cerus-fs",
-	"version": "0.1.7",
+	"version": "0.1.8",
 	"description": "The file system module for CerusJS",
 	"main": "index.js",
 	"repository": {
