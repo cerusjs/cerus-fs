@@ -32,14 +32,6 @@ var exists = function(path) {
 
 describe("file", function() {
 	describe("constructor", function() {
-		context("with non-string as path", function() {
-			it("should throw a TypeError", function() {
-				expect(function() {
-					reset(1234, {fullpath: true});
-				}).to.throw();
-			});
-		});
-
 		context("with a non-existant file", function() {
 			it("shouldn't throw an error", function() {
 				expect(function() {
@@ -67,14 +59,6 @@ describe("file", function() {
 
 	describe("#sync", function() {
 		describe("#append", function() {
-			context("with a non-string as parameter", function() {
-				it("should throw an error", function() {
-					expect(function() {
-						reset("file.txt").sync().append(1234);
-					}).to.throw();
-				});
-			});
-
 			context("appending to a folder", function() {
 				it("should throw an error", function() {
 					expect(function() {
